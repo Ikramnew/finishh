@@ -19,9 +19,10 @@ cloudinary.config({
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
-hbs.registerHelper('formatDate', function(date) {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(date).toLocaleDateString('id-ID', options); // Ganti 'id-ID' dengan kode lokal yang sesuai jika perlu
+hbs.registerHelper('formatDate', function(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
 });
 hbs.registerHelper('includes', function(array, value) {
     return array && array.includes(value);
@@ -210,7 +211,6 @@ async function projectEditView(req, res) {
     }
 }
 
-// Edit project submission with file upload
 async function projectEdit(req, res) {
     const { id } = req.params;
     const { project_name, description, start_date, end_date, technologies = [] } = req.body;
@@ -238,9 +238,11 @@ async function projectEdit(req, res) {
         res.redirect("/project");
     } catch (error) {
         console.error("Error updating project:", error);
-        res.status(500).send("Error updating project");
+        req.session.errorMessage = 'Error updating project, please try again.';
+        res.redirect("/edit-project/" + id); // Redirect to edit page with error message
     }
 }
+
 
 // Upload file to Cloudinary
 async function uploadFileToCloudinary(file) {
