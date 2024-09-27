@@ -130,8 +130,8 @@ async function projectShow(req, res) {
     try {
         const { data: projects, error } = await db
             .from('project')
-            .select('*, users (name)');
-
+            .select('*, users (name)')
+            .order('createdAt', { ascending: false });
         if (error) {
             throw error;
         }
