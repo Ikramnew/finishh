@@ -203,8 +203,8 @@ async function projectEditView(req, res) {
         if (error || !project) {
             return res.status(404).send("Project not found");
         }
-
-        res.render("editproject", { project });
+        req.session.user
+        res.render("editproject", { project, user:req.session.user });
     } catch (error) {
         console.error("Error fetching project for edit view:", error);
         res.status(500).send("Error fetching project for edit view");
@@ -247,7 +247,7 @@ async function projectEdit(req, res) {
     } catch (error) {
         console.error("Error updating project:", error);
         req.session.errorMessage = 'Error updating project, please try again.';
-        res.redirect("/edit-project/" + id); // Redirect to edit page with error message
+        res.redirect("/edit-project/" + id); 
     }
 }
 
