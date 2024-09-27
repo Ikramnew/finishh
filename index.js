@@ -212,6 +212,7 @@ async function projectEditView(req, res) {
 }
 
 async function projectEdit(req, res) {
+    const formattedTechnologies = `{${technologies.join(',')}}`;
     const { id } = req.params;
     const { project_name, description, start_date, end_date, technologies = [] } = req.body;
 
@@ -225,7 +226,7 @@ async function projectEdit(req, res) {
                 description,
                 start_date: new Date(start_date),
                 end_date: new Date(end_date),
-                technologies,
+                technologies: formattedTechnologies,
                 image
             })
             .eq('id', id);
@@ -262,34 +263,37 @@ async function uploadFileToCloudinary(file) {
 
 // Add project with file upload
 async function postProject(req, res) {
-    const { project_name, start_date, end_date, description, technologies = [] } = req.body;
-    const userId = req.session.user.id;
-    const user = req.session.user;
-    try {
-        const imageUrl = req.file ? await uploadFileToCloudinary(req.file) : 'https://default.image.url'; // Ganti dengan URL gambar default
+  // postProject function
+const { project_name, start_date, end_date, description, technologies = [] } = req.body;
 
-        const { error } = await db
-            .from('project')
-            .insert({
-                project_name,
-                start_date: new Date(start_date),
-                end_date: new Date(end_date),
-                description,
-                technologies,
-                image: imageUrl,
-                userid: userId,
-            });
+const formattedTechnologies = `{${technologies.join(',')}}`; 
 
-        if (error) {
-            throw error;
-        }
+try {
+    const imageUrl = req.file ? await uploadFileToCloudinary(req.file) : 'https://default.image.url';
 
-        req.session.successMessage = "Project added successfully!";
-        res.redirect("/project");
-    } catch (error) {
-        console.error("Error adding project:", error);
-        res.status(500).send("Error adding project");
+    const { error } = await db
+        .from('project')
+        .insert({
+            project_name,
+            start_date: new Date(start_date),
+            end_date: new Date(end_date),
+            description,
+            technologies: formattedTechnologies, 
+            image: imageUrl,
+            userid: userId,
+        });
+
+    if (error) {
+        throw error;
     }
+
+    req.session.successMessage = "Project added successfully!";
+    res.redirect("/project");
+} catch (error) {
+    console.error("Error adding project:", error);
+    res.status(500).send("Error adding project");
+}
+
 }
 
 // Contact page
