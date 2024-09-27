@@ -212,11 +212,18 @@ async function projectEditView(req, res) {
 }
 
 async function projectEdit(req, res) {
-    const formattedTechnologies = `{${technologies.join(',')}}`;
     const { id } = req.params;
-    const { project_name, description, start_date, end_date, technologies = [] } = req.body;
+    const { project_name, description, start_date, end_date } = req.body;
+    let { technologies } = req.body; // Pastikan variabel technologies diakses dengan benar
+
+    // Jika technologies tidak ada, set nilai default sebagai array kosong
+    technologies = technologies || [];
 
     try {
+        // Convert array technologies ke format PostgreSQL
+        const formattedTechnologies = `{${technologies.join(',')}}`;
+
+        // Jika ada file baru yang diunggah, upload ke Cloudinary, jika tidak gunakan gambar lama
         const image = req.file ? await uploadFileToCloudinary(req.file) : req.body.existingImage;
 
         const { error } = await db
@@ -226,7 +233,7 @@ async function projectEdit(req, res) {
                 description,
                 start_date: new Date(start_date),
                 end_date: new Date(end_date),
-                technologies:formattedTechnologies,
+                technologies: formattedTechnologies, // Gunakan array yang sudah diformat
                 image
             })
             .eq('id', id);
@@ -243,6 +250,7 @@ async function projectEdit(req, res) {
         res.redirect("/edit-project/" + id); // Redirect to edit page with error message
     }
 }
+
 
 
 // Upload file to Cloudinary
