@@ -23,6 +23,11 @@ hbs.registerHelper('formatDate', function(date) {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(date).toLocaleDateString('id-ID', options); // Ganti 'id-ID' dengan kode lokal yang sesuai jika perlu
 });
+hbs.registerHelper('includes', function(array, value) {
+    return array && array.includes(value);
+  });
+  
+
 // Set up view engine and static files
 app.set("view engine", "hbs");
 app.set("views", path.join(__dirname, "./views"));
