@@ -226,7 +226,7 @@ async function projectEdit(req, res) {
                 description,
                 start_date: new Date(start_date),
                 end_date: new Date(end_date),
-                technologies: formattedTechnologies,
+                technologies:formattedTechnologies,
                 image
             })
             .eq('id', id);
@@ -263,37 +263,35 @@ async function uploadFileToCloudinary(file) {
 
 // Add project with file upload
 async function postProject(req, res) {
-  // postProject function
-const { project_name, start_date, end_date, description, technologies = [] } = req.body;
+    const { project_name, start_date, end_date, description, technologies = [] } = req.body;
+    const userId = req.session.user.id;
+    const user = req.session.user;
+    const formattedTechnologies = `{${technologies.join(',')}}`;
+    try {
+        const imageUrl = req.file ? await uploadFileToCloudinary(req.file) : 'https://default.image.url'; // Ganti dengan URL gambar default
 
-const formattedTechnologies = `{${technologies.join(',')}}`; 
+        const { error } = await db
+            .from('project')
+            .insert({
+                project_name,
+                start_date: new Date(start_date),
+                end_date: new Date(end_date),
+                description,
+                technologies:formattedTechnologies,
+                image: imageUrl,
+                userid: userId,
+            });
 
-try {
-    const imageUrl = req.file ? await uploadFileToCloudinary(req.file) : 'https://default.image.url';
+        if (error) {
+            throw error;
+        }
 
-    const { error } = await db
-        .from('project')
-        .insert({
-            project_name,
-            start_date: new Date(start_date),
-            end_date: new Date(end_date),
-            description,
-            technologies: formattedTechnologies, 
-            image: imageUrl,
-            userid: userId,
-        });
-
-    if (error) {
-        throw error;
+        req.session.successMessage = "Project added successfully!";
+        res.redirect("/project");
+    } catch (error) {
+        console.error("Error adding project:", error);
+        res.status(500).send("Error adding project");
     }
-
-    req.session.successMessage = "Project added successfully!";
-    res.redirect("/project");
-} catch (error) {
-    console.error("Error adding project:", error);
-    res.status(500).send("Error adding project");
-}
-
 }
 
 // Contact page
